@@ -1,0 +1,33 @@
+---
+### provision AWS EC2 instance
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+  pre_tasks:
+    - include_vars: variables.yml
+  tasks:
+    - name: Ansible_Server
+      local_action:
+        module: ec2
+        group_id: "sg-0d47757023eac4b74"
+        instance_type: "t2.micro"
+        vpc_subnet_id: "subnet-0b6bbb7aa2055a6d8"
+        image: "ami-02eb7a4783e7e9317"
+        region: "ap-south-1"
+        assign_public_ip: yes
+        wait: true
+        exact_count: "1"
+        count_tag:
+          Role: "someRole"
+        volumes:
+          - device_name: /dev/sda1
+            snapshot: snap-03a06a7def7863b48
+            volume_type: gp2
+            volume_size: "8"
+            delete_on_termination: true
+      register: ec2
+
+  post_tasks:
+    - name: refresh hosts inventory list
+      meta: refresh_inventory
